@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("array_square_sum", "for array_square_sum support", "no");
+
+// Otherwise, use ARG_ENABLE
+// ARG_ENABLE("array_square_sum", "enable array_square_sum support", "no");
+
+if (PHP_ARRAY_SQUARE_SUM != "no") {
+	EXTENSION("array_square_sum", "array_square_sum.c", PHP_EXTNAME_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+}
+
