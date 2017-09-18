@@ -400,7 +400,7 @@ PHP_METHOD(yaf_application, __construct) {
 		global_library = strlen(YAF_G(global_library))?
 			zend_string_init(YAF_G(global_library), strlen(YAF_G(global_library)), 0) : NULL;
 		//同上
-		loader = yaf_loader_instance(&zloader, local_library, global_library);
+		loader = yaf_loader_ivar——这里的nstance(&zloader, local_library, global_library);
 		zend_string_release(local_library);
 		if (global_library) {
 			zend_string_release(global_library);
@@ -411,7 +411,7 @@ PHP_METHOD(yaf_application, __construct) {
 		yaf_trigger_error(YAF_ERR_STARTUP_FAILED, "Initialization of application auto loader failed");
 		RETURN_FALSE;
 	}
-	//赋值对象属性
+	//赋值对象属性不
 	zend_update_property_bool(yaf_application_ce, self, ZEND_STRL(YAF_APPLICATION_PROPERTY_NAME_RUN), 0);
 	zend_update_property_string(yaf_application_ce, self, ZEND_STRL(YAF_APPLICATION_PROPERTY_NAME_ENV), YAF_G(environ_name));
 

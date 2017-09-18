@@ -330,7 +330,7 @@ static size_t sapi_cgi_ub_write(const char *str, size_t str_length)
 
 	return str_length;
 }
-
+//phoenixadd,告诉zend如何输出数据，对于mod_php来说，这个函数提供了一个向response数据写的接口，对cgi来说，只是简单的写到stdout.
 static size_t sapi_fcgi_ub_write(const char *str, size_t str_length)
 {
 	const char *ptr = str;
@@ -352,6 +352,7 @@ static size_t sapi_fcgi_ub_write(const char *str, size_t str_length)
 	return str_length;
 }
 
+//phoenixadd提供给zend的书信缓存的函数句柄，而对cgi,只是简单的调用系统提供的fflush;
 static void sapi_cgi_flush(void *server_context)
 {
 	if (fflush(stdout) == EOF) {
@@ -815,6 +816,7 @@ static void php_cgi_ini_activate_user_config(char *path, size_t path_len, const 
 }
 /* }}} */
 
+//phoenixadd,初始化，资源分配。这里没有提供初始化处理句柄。而对mod_php来说，它在apache的pool中注册资源析构函数，申请空间，初始化环境变量等等。
 static int sapi_cgi_activate(void)
 {
 	char *path, *doc_root, *server_name;
@@ -899,6 +901,7 @@ static int sapi_cgi_activate(void)
 	return SUCCESS;
 }
 
+//phoenixadd,这个函数对应于activate函数，它提供了一个handler用来处理收尾工作，对于cgi来说，它只是简单的刷新缓冲区，用以保证用户在zend关闭前得到所有的输出数据。
 static int sapi_cgi_deactivate(void)
 {
 	/* flush only when SAPI was started. The reasons are:
@@ -919,6 +922,7 @@ static int sapi_cgi_deactivate(void)
 	return SUCCESS;
 }
 
+//phoenixadd 只是简单的调用了php的初始化函数。
 static int php_cgi_startup(sapi_module_struct *sapi_module)
 {
 	if (php_module_startup(sapi_module, &cgi_module_entry, 1) == FAILURE) {
@@ -933,28 +937,41 @@ static sapi_module_struct cgi_sapi_module = {
 	"cgi-fcgi",						/* name */
 	"CGI/FastCGI",					/* pretty name */
 
-	php_cgi_startup,				/* startup */
+	php_cgi_startup,				/* startup */ 
+	//phoenixadd 当一个应用要调用php的时候，这个函数会被调用，对于CGI来讲，它只是简单的调用了php的初始化函数,see line 922
 	php_module_shutdown_wrapper,	/* shutdown */
+	//phoenixadd 简单的调用了php_module_shutdown:对php关闭函数的简单包装。
 
 	sapi_cgi_activate,				/* activate */
+	//phoenixadd，处理一些初始化，资源分配的事务。
 	sapi_cgi_deactivate,			/* deactivate */
 
 	sapi_cgi_ub_write,				/* unbuffered write */
 	sapi_cgi_flush,					/* flush */
 	NULL,							/* get uid */
+	//phoenixadd,让zend可以验证一个要执行脚本文件的state,从而判断文件是否具有执行权限等等，CGI没有提供。
 	sapi_cgi_getenv,				/* getenv */
-
+	//phoenixadd,为zend提供了一个根据name来查找环境变量的接口;对mod_php5来说，当我们在脚本中调用getenv的时候，就会间接
+	//的调用这个句柄;而对于CGI来讲，因为他的运行机制和CLI很类似，直接调用父级是shell,所以只是简单的调用了系统提供的getenv
 	php_error,						/* error handler */
-
+	//错误处理函数，看php mailist使得php的粗务处理机制完全OO化，也就是，改写这个函数句柄，使得每当有错误发生都throw一个异常。
+	//cgi只是简单的调用了php提供的错误处理函数。
 	NULL,							/* header handler */
+	//phoenixadd,php的header函数的时候被调用，对于CGI，不提供
 	sapi_cgi_send_headers,			/* send headers handler */
+	//phoenixadd,在真正发送header的时候被调用，一般来说，就是当有任何的输出要发送之前。
 	NULL,							/* send header handler */
-
+	//phoenixadd,这个单独用来发送每一个header,cgi没有提供
 	sapi_cgi_read_post,				/* read POST data */
+	//phoenixadd这个句柄指明了如何获取POST的数据，如果做过CGI编程的话，我们就知道CGI是从stdin中读取POSTDATA的，
 	sapi_cgi_read_cookies,			/* read Cookies */
+	//phoenixadd,和上面一样，只不过是取获取cookie值。
 
 	sapi_cgi_register_variables,	/* register server variables */
+	//phoenixadd这个函数给了一个接口，用以给$_SERVER变量中添加变量，对于CGI来说，注册一个PHP_SELF,这样我们就可以在
+	//脚本中访问$_SERVER['PHP_SELF']来获取本次的request_uri
 	sapi_cgi_log_message,			/* Log message */
+	//phoenixadd用来输出错误信息，对于CGI来讲，只是简单的输出到stderr
 	NULL,							/* Get request time */
 	NULL,							/* Child terminate */
 

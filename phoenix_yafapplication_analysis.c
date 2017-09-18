@@ -2,16 +2,16 @@ yaf处理一次web请求的详细过程(理解了这个过程就理解了yaf的�
 
 application启动之后,yaf的对象关系如图:
 
-|Application实例|      |Dispatcher实例|		  |Request实例|
-________________       _______________        ____________
-|$dispatcher---+---->  |$request-----+------->|$module    |
-|$config\			   |$router\	 |        |$controller|
-	/|\	 \						\			  |$action    |
-	 |	  \					 	 \
-	 |	   \					  \
-	 |	    \				   	   \
-	 |	     \					    \
-	 |	     \\|					\\|
+|Application实例|       |Dispatcher实例|		   |Request实例|
+_________________       _______________         ____________
+|$dispatcher--- |---->  |$request-----|------->|$module    |
+|$config\			    |$router\	  |        |$controller|
+	/|\	 \						 \			   |$action    |
+	 |	  \					 	  \
+	 |	   \					   \
+	 |	    \				   	    \
+	 |	     \					     \
+	 |	     \\|					 \\|Yf
 	 |	     |Config实例|		|Router路由器实例|			|Router路由协议的容器|
 	 |	     					|$routes--------|-------->  |				   |
 	 |
